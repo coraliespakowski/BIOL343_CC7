@@ -56,6 +56,11 @@ Import the data as an object called `islands`, check its structure and count the
 
 ```{r import-data, message=FALSE}
 # islands <-
+islands <- read.csv("data/islands.csv")
+
+# check structure
+
+# count missing values
 ```
 
 **Question 1:** Which column has missing values, and how many? Compare the median and the maximum of each numeric column: which of the variables in the hypotheses have a few values far larger than most of the others?
