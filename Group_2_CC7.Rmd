@@ -139,22 +139,22 @@ install.packages("lmtest")
 library(lmtest)
 
 # likelihood ratio test
-lrtest(area_mod, all_mod)
+lrtest(area_mod, h1_mod)
 
 # test statistic
-LR <- 2 * ((-133.83) - (-139.05))
-p_value <- pchisq(LR, df = 5, lower.tail = FALSE)
+LR <- 2 * ((-138.84) - (-139.05))
+p_value <- pchisq(LR, df = 2, lower.tail = FALSE)
 
 LR
 p_value
 
 # ANOVA
-anova(area_mod, all_mod)
+anova(area_mod, h1_mod)
 ```
 
 **Question 4:** What do the `#Df` values (3 and 5) count? Compare the *p*-values from the LRT and the ANOVA. Do the two tests reach the same conclusion? Why are they not exactly the same?
 
-**Answer:** The #Df values count the number of estimated parameters in each model. In the LRT, the area model has 3 parameters (hence the Df of 3): the intercept, the area coefficient, and the residual variance. The full model estimates 8 parameters (intercept, 6 predictor coefficients, and one residual variance). The difference in parameters is 5, hence the Df of 5 because 5 more parameters were added for the full model. ANOVA works similarly in that the degrees of freedom indicate the difference in degrees of freedom between the reduced (Df=20) and full model (Df=15). The LRT p-value was 0.06359 while the ANOVA p-value was 0.1688. Both results indicate that adding predictors does not significantly improve model fit at the 5% significance level. The p-values are not exactly the same because the LRT uses a chi-squared distribution, whereas ANOVA uses an F-distribution. LRT is based on differences in log-likelihood, meanwhile ANOVA compares residual sums of squares.
+**Answer:** The #Df values count the number of estimated parameters in each model. In the LRT, the area model has 3 parameters (hence the Df of 3): the intercept, the area coefficient, and the residual variance. The full model estimates 5 parameters (intercept, 3 predictor coefficients, and one residual variance). The LRT p-value was 0.06359 while the ANOVA p-value was 0.1688. Both results indicate that adding predictors does not significantly improve model fit at the 5% significance level. The p-values are not exactly the same because the LRT uses a chi-squared distribution, whereas ANOVA uses an F-distribution. LRT is based on differences in log-likelihood, meanwhile ANOVA compares residual sums of squares.
 
 # Part 4 — Information criteria {-}
 
@@ -186,7 +186,7 @@ models <- list(
 model_comp <- data.frame(
     Model = names(models),
     AIC = sapply(models, AIC),
-    AICc = sapply(models, MuMIn::AICc),
+    AICc = sapply(models, AICc),
     BIC = sapply(models, BIC)
 )
 
@@ -209,7 +209,7 @@ model_comp
 
 **Question 5:** Which model is best by AIC, by AICc and by BIC? Using the rules of thumb (a difference under 2 means equivalent, over 6 means clearly worse), which models are equivalent to the best one by AICc and which are clearly worse? Why does AICc disagree with AIC here? Which hypothesis is best supported, and what does the hypothesis 2 model tell you on its own?
 
-**Answer:** The best model by AIC is the all-six-predictor model (283.66), while the best model by AICc and BIC is the area-only model (285.43 and 287.37, respectively). Using the AICc rules of thumb, the area-only model is the best model, and H1 (ΔAICc = 5.99) is clearly worse because its difference is just below 6, placing it near the boundary. The all-six-predictor model (ΔAICc = 9.30), H2 (13.49), and the null model (15.45) are clearly worse. AICc disagrees with AIC because it applies an additional penalty for model complexity, which is especially important with a small sample size of only 22 islands. Overall, the area-only model is best supported, suggesting that island area is the strongest predictor of native species richness. On its own, the H2 model suggests that island history (years since deglaciation, latitude and years since isolation) is less effective at explaining native richness than island area, although this does not establish that these historical factors have no individual effects.
+**Answer:** The best model by AIC is the all-six-predictor model (283.66), while the best model by AICc and BIC is the area-only model (285.43 and 287.37, respectively). Using the AICc rules of thumb, the area-only model is the best model, and H1 (ΔAICc = 5.992) is clearly worse because its difference is just below 6, placing it near the boundary. The all-six-predictor model (ΔAICc = 9.299), H2 (13.493), and the null model (15.449) are clearly worse. AICc disagrees with AIC because it applies an additional penalty for model complexity, which is especially important with a small sample size of only 22 islands. Overall, the area-only model is best supported, suggesting that island area is the strongest predictor of native species richness. On its own, the H2 model suggests that island history (years since deglaciation, latitude and years since isolation) is less effective at explaining native richness than island area, although this does not establish that these historical factors have no individual effects. Overall the model's p-value for h2 is significant but not all p-values within the model are significant, as such, hypothesis 2 may be significant and it also may not.
 
 # Missing values
 
@@ -253,7 +253,7 @@ anova(area_mod_complete, soil_mod_complete)
 
 **Question 6:** Before you removed the missing values, which model looked better by AIC, and by how much? Why was that comparison wrong? After the fix, does the number of soil types improve the model? What did removing the missing values cost?
 
-**Answer:**
+**Answer:** Before removing missing values, the model including soil types looked better, with an AIC 56.26 points lower than the area-only model. However, this comparison was unfair because the models used different numbers of islands (18 versus 22). After removing missing values, both models used the same 18 islands, and the soil model still performed better, with lower AIC (227.84 vs. 233.94) and AICc (230.91 vs. 235.65). This suggests that the number of soil types improves the model. The cost of removing missing values was losing 4 islands (18.2% of the original dataset), reducing the sample size and potentially statistical power.
 
 # Part 5 — Checking the models {-}
 
@@ -262,12 +262,74 @@ anova(area_mod_complete, soil_mod_complete)
 Do this on the untransformed data first: run your chunks (or render to HTML) and look at the results. Check whether the six-predictor model meets the assumptions about its residuals: plot a histogram of the residuals, a Q-Q plot of the residuals, and the residuals against the predicted values. Look at the distributions of the response and the predictors too. Decide which variables to transform. Make the change **once, in the chunk of the first task**, so that the transformed values replace the originals and every model, test and table below uses them without being edited. Update any axis titles that the change makes wrong. Then knit again. Do not rewrite your answers to Questions 2–6: they describe the untransformed analysis.
 
 ```{r residuals, message=FALSE}
+resid <- data.frame(Residuals=residuals(all_mod))
+#histogram of residuals
+ggplot(resid, aes(x=Residuals)) +
+  geom_histogram()+
+  labs(title="Histogram of Residuals", x="Residuals", y="Frequency") +
+  theme_classic()
 
+# Q-Q plot
+ggplot(resid, aes(sample=Residuals)) +
+  stat_qq() +
+  stat_qq_line() +
+  labs(title="Q-Q Plot of Residuals", x="Theoreticacl Quantiles", y="Sample Quentiles") + theme_classic()
+
+# Residuals agains predicted
+resid$Predicted <- fitted(all_mod)
+ggplot(resid, aes(x=Predicted, y=Residuals)) +
+  geom_point() +
+  labs(title="Residuals vs. Predicted", x="Predicted Richness", y="Residuals") + theme_classic()
+
+#Histogram of Predictors
+ggplot(islands, aes(x=ntv.rich)) + 
+  geom_histogram() +
+  labs(title="Native Species Richness", x="Native Richness", y="Frequency") +
+  theme_classic()
+ggplot(islands, aes(x=area)) + 
+  geom_histogram() +
+  labs(title="Island Area", x="Area(ha^2)", y="Frequency") +
+  theme_classic()
+ggplot(islands, aes(x=dist.mnland)) + 
+  geom_histogram() +
+  labs(title="Distnace to Mainland", x="Distance(km)", y="Frequency") +
+  theme_classic()
+ggplot(islands, aes(x=elev)) + 
+  geom_histogram() +
+  labs(title="Elevation Above Sea Level", x="Elevation (m)", y="Frequency") +
+  theme_classic()
+ggplot(islands, aes(x=latitude)) + 
+  geom_histogram() +
+  labs(title="Latitude", x="Latitude (°N)", y="Frequency") +
+  theme_classic()
+ggplot(islands, aes(x=years.isol)) + 
+  geom_histogram() +
+  labs(title="Years since Isolation", x="Years", y="Frequency") +
+  theme_classic()
+ggplot(islands, aes(x=years.deglac)) + 
+  geom_histogram() +
+  labs(title="Years since Deglaciation", x="Years", y="Frequency") +
+  theme_classic()
+# Investigation area and ntv richness
+ggplot(islands,aes(x=area, y=ntv.rich)) +
+  geom_point() + geom_smooth(method="lm") +
+  theme_classic()
+ggplot(islands,aes(x=log(area), y=ntv.rich)) +
+  geom_point() + geom_smooth(method="lm") +
+  theme_classic()
+# log area is far more linear
+# Investigating elevation
+ggplot(islands,aes(x=elev, y=ntv.rich)) +
+  geom_point() + geom_smooth(method="lm") +
+  theme_classic()
+ggplot(islands,aes(x=log(elev), y=ntv.rich)) +
+  geom_point() + geom_smooth(method="lm") +
+  theme_classic()
 ```
 
 **Question 7:** Which variables did you transform, and what in the plots told you to? Compare the untransformed and transformed results: what changed in the fit of the models, in which model AIC, AICc and BIC choose, and in your conclusion about soil types? How long did it take to redo the whole analysis, and what would it have taken if you had done each step by hand (for example, copying numbers into a spreadsheet or typing them into your answers)?
 
-**Answer:**
+**Answer:** I transformed area and elevation, by taking the log of the both instead. This change was made because the Q-Q plot showed departures from the expected quantiles, and the histograms showed left-leaning skews. Also the area vs. native richness plot did not show a linear relationship, but after taking the log the relationship improved, this was true for the elevation also. The other predictors appeared relatively normally distributed, but native richness appeared skewed. The richness was not changed as transforming it lead to a greater skew and more departure from the theoretical quantiles. Before area and elevation were transformed, the AIC selected the all model for the best fit. Now that area has been changed, AIC, AICc, and BIC all select the area model. The transformation of the area only improved the results supporting the area model. The AICc changed from 285.43 before the transformation to 263.1713 after. The LRT from the soil test no longer showed significant results (p=0.2812). The AIC and AICc both increased after the addition of soil whereas before the area was transformed the soil model decreased them. Redoing the whole analysis was relatively simple, after I transformed the area in the first chunk I could just immediately redo all the rest of the chunks. This would be a lengthy process by hand, and doing it by hand increases the likelihood of making an error.
 
 # DO THIS LAST {-}
 

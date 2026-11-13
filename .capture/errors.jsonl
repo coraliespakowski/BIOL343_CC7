@@ -8,3 +8,5 @@
 {"chunk":null,"ts":"2026-11-13T18:39:45Z","pid":59403,"engine":"r","severity":"error","render":false,"text":"## Error: no applicable method for 'logLik' applied to an object of class \"c('double', 'numeric')\""}
 {"chunk":null,"ts":"2026-11-13T18:39:50Z","pid":59403,"engine":"r","severity":"error","render":false,"text":"## Error: no applicable method for 'logLik' applied to an object of class \"c('double', 'numeric')\""}
 {"chunk":null,"ts":"2026-11-13T18:42:40Z","pid":59403,"engine":"r","severity":"error","render":false,"text":"## Error: no applicable method for 'logLik' applied to an object of class \"c('double', 'numeric')\""}
+{"chunk":null,"ts":"2026-11-13T19:57:09Z","pid":59403,"engine":"r","severity":"error","render":false,"text":"## Error: object 'MuMInAICc' not found"}
+{"chunk":null,"ts":"2026-11-13T19:57:19Z","pid":59403,"engine":"r","severity":"error","render":false,"text":"## Error: object 'MuMInAICc' not found"}
