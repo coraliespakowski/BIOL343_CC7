@@ -59,13 +59,17 @@ Import the data as an object called `islands`, check its structure and count the
 islands <- read.csv("data/islands.csv")
 
 # check structure
+dim(islands)
+str(islands)
+summary(islands)
 
 # count missing values
+colSums(is.na(islands))
 ```
 
 **Question 1:** Which column has missing values, and how many? Compare the median and the maximum of each numeric column: which of the variables in the hypotheses have a few values far larger than most of the others?
 
-**Answer:**
+**Answer:** The soil types column has 4 missing values. Out of the variables in the hypotheses, island elevation (elev) and area (area) have much higher maximums than medians which indicates they have a few values far larger than most of the others.
 
 # Part 2 — Goodness of fit {-}
 
@@ -74,9 +78,30 @@ islands <- read.csv("data/islands.csv")
 Plot native richness (y) against island area (x) with a fitted straight line, axis labels and a clean theme. Fit a linear model of native richness with area as the only predictor, and print the summary. Calculate the model's R² yourself from the predicted and observed values. Then fit a second model with **all six** predictors from the hypotheses (area, elevation, distance from the mainland, latitude, years since isolation and years since deglaciation) and print its summary.
 
 ```{r r-squared, message=FALSE}
+# importing tidyverse for ggplot2
+library(tidyverse)
+
+# plotting native richness (UNITS?) against area
+ggplot(islands, aes(y = ntv.rich, x = area)) +
+    geom_point() +
+    geom_smooth(method = "lm", formula = y ~ x) +
+    labs(y = "Native plant richness", x = "Island area (hectares)") +
+    theme_classic()
+
+# calculating the model's R² from the predicted and observed values
+R2 <- cor(observed, predicted)^2 # observed and predicted???
+print(R2)
+
 # area_mod <-
+area_mod <- lm(ntv.rich ~ area, data = islands)
+summary(area_mod)
 
 # all_mod <-
+all_mod <- lm(
+    ntv.rich ~ area + elev + dist.mnland + latitude + years.isol + years.deglac,
+    data = islands
+)
+summary(all_mod)
 ```
 
 **Question 2:** Does your R² match the one in the summary? The six-predictor model has a higher R² than the area model. Does that mean it is a better model? What does the adjusted R² do differently?
@@ -89,11 +114,15 @@ Hypothesis 1 says native richness depends on island area and elevation but not o
 
 ```{r anova}
 # h1_mod <-
+h1_mod <- lm(ntv.rich ~ area + elev + dist.mnland, data = islands)
+
+# ANOVA
+anova(area_mod, h1_mod)
 ```
 
 **Question 3:** Why are these two models *nested*? Which is the full and which the reduced model? Does adding elevation and distance from the mainland improve the fit more than expected by chance? What does that say about hypothesis 1?
 
-**Answer:**
+**Answer:** These models are nested in the sense than one model contains the other: area as a predictor for native plant richness is contained in both models.
 
 # Part 3 — Likelihood {-}
 

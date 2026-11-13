@@ -1,0 +1,166 @@
+---
+title: "BIOL343 Coding Challenge 7: Choosing among models"
+author: "Group #2 — names and student numbers in the chunk below"
+date: "`r format(Sys.Date(), '%d %B %Y')`"
+output:
+  html_document:
+    toc: true
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Group Members {-}
+
+```{r group_members}
+# Name - Queen's Student Number
+
+# 1. Kaylee Ellwood - 20391007
+# 2. Margo Kaminska - 20449041
+# 3. Noah Lu - 20483156
+# 4. Coralie Spakowski - 20471806
+# 5. Tianyi Wang - 20386987
+
+```
+
+# DO THIS FIRST {-}
+
+Copy and paste these two lines into your R Console to install the current positpal, then **restart R** (*Session → Restart R*, or the restart button in the Console) before anything else. **Do not include them as a code chunk.**
+
+```
+install.packages("remotes")
+remotes::install_url("https://quantitative.bio/downloads/positpal.tar.gz", upgrade = "never")
+```
+
+After the restart, paste this line, replacing `FILENAME.Rmd` with the name you are going to use for the .R or .Rmd file you are going to upload (rename the template first, e.g. `Group_#_CC7.Rmd`, and use that exact name):
+
+```
+positpal::start("FILENAME.Rmd")
+```
+
+Before you run it: create or open an R project folder for this challenge so that it is your working directory, then save this file in that folder under the name you will upload, and check that autosave is on (*File → Auto Save*). Closing the laptop or quitting Positron does not lose your log: when you reopen the project folder, positpal picks up where you left off and says so in the Console after your first command. **Every time you open Positron to work on this file, run the `start()` line again**, even if positpal says it picked up where you left off; it continues the same log and never erases it. See OnQ and use the positpal chatbot if you are having trouble with positpal.
+
+# Part 1 — Import {-}
+
+The data file is `data/islands.csv`: one row per island off the east coast of North America, with the number of native and non-native plant species and the physical and historical features of each island. The instructions describe the study, the variables and the hypotheses. **Do not edit the file by hand.**
+
+So far you have tested one model at a time against a null hypothesis. This week you will compare several models, each representing a different hypothesis, and ask which one the data support best. You will work only with **native** species richness. Use the variables as they are in the file until the last task.
+
+As in earlier challenges, the tasks tell you **what** to produce, not which function to use. The starter lines in some chunks are commented out so that the blank template knits; remove the `#` as you fill them in.
+
+# Import and inspect the data
+
+Import the data as an object called `islands`, check its structure and count the missing values in each column. Use `islands` for the rest of the challenge.
+
+```{r import-data, message=FALSE}
+# islands <-
+islands <- read.csv("data/islands.csv")
+
+# check structure
+dim(islands)
+str(islands)
+
+# count missing values
+colSums(is.na(islands))
+```
+
+**Question 1:** Which column has missing values, and how many? Compare the median and the maximum of each numeric column: which of the variables in the hypotheses have a few values far larger than most of the others?
+
+**Answer:** The soil types column has 4 missing values. **Compare the median and the maximum of each numeric column: which of the variables in the hypotheses have a few values far larger than most of the others?**
+
+# Part 2 — Goodness of fit {-}
+
+# R² as a measure of fit
+
+Plot native richness (y) against island area (x) with a fitted straight line, axis labels and a clean theme. Fit a linear model of native richness with area as the only predictor, and print the summary. Calculate the model's R² yourself from the predicted and observed values. Then fit a second model with **all six** predictors from the hypotheses (area, elevation, distance from the mainland, latitude, years since isolation and years since deglaciation) and print its summary.
+
+```{r r-squared, message=FALSE}
+# area_mod <-
+
+# all_mod <-
+```
+
+**Question 2:** Does your R² match the one in the summary? The six-predictor model has a higher R² than the area model. Does that mean it is a better model? What does the adjusted R² do differently?
+
+**Answer:**
+
+# Comparing nested models with ANOVA
+
+Hypothesis 1 says native richness depends on island area and elevation but not on distance from the mainland. Fit a model with area, elevation and distance from the mainland as predictors (the hypothesis 1 model). Use an ANOVA to test whether it fits the data better than the model with area alone.
+
+```{r anova}
+# h1_mod <-
+```
+
+**Question 3:** Why are these two models *nested*? Which is the full and which the reduced model? Does adding elevation and distance from the mainland improve the fit more than expected by chance? What does that say about hypothesis 1?
+
+**Answer:**
+
+# Part 3 — Likelihood {-}
+
+# The likelihood ratio test
+
+Compare the same two models with a likelihood ratio test. Then calculate the test statistic and its *p*-value yourself from the two log-likelihoods.
+
+```{r lrt}
+
+```
+
+**Question 4:** What do the `#Df` values (3 and 5) count? Compare the *p*-values from the LRT and the ANOVA. Do the two tests reach the same conclusion? Why are they not exactly the same?
+
+**Answer:**
+
+# Part 4 — Information criteria {-}
+
+# Five competing hypotheses
+
+Hypothesis 2 says native richness depends on the islands' history: years since deglaciation, latitude and years since isolation. Fit the hypothesis 2 model and an intercept-only (null) model. Then compare the five models you now have (null, area, hypothesis 1, hypothesis 2, all six predictors) with AIC, AICc and BIC. For the model with the lowest AICc, calculate how many times more likely it is than each of the other four.
+
+```{r info-criteria}
+# h2_mod <-
+
+# null_mod <-
+```
+
+**Question 5:** Which model is best by AIC, by AICc and by BIC? Using the rules of thumb (a difference under 2 means equivalent, over 6 means clearly worse), which models are equivalent to the best one by AICc and which are clearly worse? Why does AICc disagree with AIC here? Which hypothesis is best supported, and what does the hypothesis 2 model tell you on its own?
+
+**Answer:**
+
+# Missing values
+
+Hypothesis 1 leaves out the number of soil types, which might also affect native richness. Fit a model with area and the number of soil types as predictors, and compare its AIC with the area-only model. Check how many islands each model used. Then make a dataset with only the islands that have no missing values in the columns you need, refit both models to it, and compare them again with AIC, AICc and a likelihood ratio test.
+
+```{r missing}
+# soil_mod <-
+```
+
+**Question 6:** Before you removed the missing values, which model looked better by AIC, and by how much? Why was that comparison wrong? After the fix, does the number of soil types improve the model? What did removing the missing values cost?
+
+**Answer:**
+
+# Part 5 — Checking the models {-}
+
+# Residuals, transformation and one-step reanalysis
+
+Do this on the untransformed data first: run your chunks (or render to HTML) and look at the results. Check whether the six-predictor model meets the assumptions about its residuals: plot a histogram of the residuals, a Q-Q plot of the residuals, and the residuals against the predicted values. Look at the distributions of the response and the predictors too. Decide which variables to transform. Make the change **once, in the chunk of the first task**, so that the transformed values replace the originals and every model, test and table below uses them without being edited. Update any axis titles that the change makes wrong. Then knit again. Do not rewrite your answers to Questions 2–6: they describe the untransformed analysis.
+
+```{r residuals, message=FALSE}
+
+```
+
+**Question 7:** Which variables did you transform, and what in the plots told you to? Compare the untransformed and transformed results: what changed in the fit of the models, in which model AIC, AICc and BIC choose, and in your conclusion about soil types? How long did it take to redo the whole analysis, and what would it have taken if you had done each step by hand (for example, copying numbers into a spreadsheet or typing them into your answers)?
+
+**Answer:**
+
+# DO THIS LAST {-}
+
+When your document is finished, knit it, open the `.html` in a web browser and **print it to PDF** (*File → Print → Save as PDF*; name it `Group_#_CC7.pdf`). Then copy and paste this into the R Console to stop positpal and create your coding log. **Do not include it as a code chunk.**
+
+```
+positpal::stop_capture()
+positpal::export_capture()
+```
+
+`export_capture()` prints the name and location of the `my-capture-YYYYMMDD-HHMMSS.zip` it creates beside this file. **Each group member** uploads their own `.zip` to the **"CC7 — Coding Log (individual)"** dropbox on OnQ; the group's `.Rmd`, `.html` and **`.pdf`** (OnQ shows uploaded HTML as source code, so the PDF is what gets graded; the `.html` is a back-up) go to your section's **TUT02-CC7** or **TUT03-CC7** folder. Submissions without the log are incomplete. If `export_capture()` fails, zip the `.capture` folder yourself and upload that instead.
