@@ -85,16 +85,19 @@ library(tidyverse)
 ggplot(islands, aes(y = ntv.rich, x = area)) +
     geom_point() +
     geom_smooth(method = "lm", formula = y ~ x) +
-    labs(y = "Native plant richness", x = "Island area (hectares)") +
+    labs(y = "Native plant species richness", x = "Island area (hectares)") +
     theme_classic()
-
-# calculating the model's R² from the predicted and observed values
-R2 <- cor(observed, predicted)^2 # observed and predicted???
-print(R2)
 
 # area_mod <-
 area_mod <- lm(ntv.rich ~ area, data = islands)
 summary(area_mod)
+
+# calculating the model's R² from the predicted and observed values
+predicted <- predict(area_mod)
+observed <- islands$ntv.rich
+
+R2 <- 1 - sum((observed - predicted)^2) / sum((observed - mean(observed))^2)
+R2
 
 # all_mod <-
 all_mod <- lm(
@@ -106,7 +109,7 @@ summary(all_mod)
 
 **Question 2:** Does your R² match the one in the summary? The six-predictor model has a higher R² than the area model. Does that mean it is a better model? What does the adjusted R² do differently?
 
-**Answer:**
+**Answer:** Yes, my R² matches the one in the summary (mine = 0.561783, summary = 0.5618). Although the six-predictor model has a higher R² (0.7274) than the area-only model (0.5618), that does not mean it is a better model since adding more predictors generally increases R² even if they don't contribute much explanatory value. The adjusted R² accounts for the number of predictors in the model by penalizing unnecessary complexity. In the results, the adjusted R² increases from 0.5399 for the area model to 0.6184 for the all-predictor model. This suggests that the additional predictors improve explanatory power even after accounting for model complexity. However, nor R², nor adjusted R² can alone determine which model is best.
 
 # Comparing nested models with ANOVA
 
@@ -122,7 +125,7 @@ anova(area_mod, h1_mod)
 
 **Question 3:** Why are these two models *nested*? Which is the full and which the reduced model? Does adding elevation and distance from the mainland improve the fit more than expected by chance? What does that say about hypothesis 1?
 
-**Answer:** These models are nested in the sense than one model contains the other: area as a predictor for native plant richness is contained in both models.
+**Answer:** These models are nested in the sense than one model contains the other: the reduced model is a subset of the full model. The reduced model is area_mod and the full model is h1_mod. Adding elevation and distance from the mainland does not improve the fit more than expected by chance (F=0.1755, p=0.8404). Therefore, the additional predictors do not explain significantly more variation in native species richness than area alone. The results suggest that island area is the stronger predictor of native species richness in this dataset, while elevation and distance do not provide a significant additional contribution. This does not necessarily mean that elevation has no effect or that distance has no effect. Since the ANOVA tests both additional predictors together, their individual effects would need to be examined separately. Overall, the results do not provide strong evidence for the full hypothesis 1 that native richness depends on island area and elevation but not on distance from the mainland, although they are consistent with the prediction that island area is important.
 
 # Part 3 — Likelihood {-}
 
@@ -131,12 +134,27 @@ anova(area_mod, h1_mod)
 Compare the same two models with a likelihood ratio test. Then calculate the test statistic and its *p*-value yourself from the two log-likelihoods.
 
 ```{r lrt}
+# install lrtest package and load it from library
+install.packages("lmtest")
+library(lmtest)
 
+# likelihood ratio test
+lrtest(area_mod, all_mod)
+
+# test statistic
+LR <- 2 * ((-133.83) - (-139.05))
+p_value <- pchisq(LR, df = 5, lower.tail = FALSE)
+
+LR
+p_value
+
+# ANOVA
+anova(area_mod, all_mod)
 ```
 
 **Question 4:** What do the `#Df` values (3 and 5) count? Compare the *p*-values from the LRT and the ANOVA. Do the two tests reach the same conclusion? Why are they not exactly the same?
 
-**Answer:**
+**Answer:** The #Df values count the number of estimated parameters in each model. In the LRT, the area model has 3 parameters (hence the Df of 3): the intercept, the area coefficient, and the residual variance. The full model estimates 8 parameters (intercept, 6 predictor coefficients, and one residual variance). The difference in parameters is 5, hence the Df of 5 because 5 more parameters were added for the full model. ANOVA works similarly in that the degrees of freedom indicate the difference in degrees of freedom between the reduced (Df=20) and full model (Df=15). The LRT p-value was 0.06359 while the ANOVA p-value was 0.1688. Both results indicate that adding predictors does not significantly improve model fit at the 5% significance level. The p-values are not exactly the same because the LRT uses a chi-squared distribution, whereas ANOVA uses an F-distribution. LRT is based on differences in log-likelihood, meanwhile ANOVA compares residual sums of squares.
 
 # Part 4 — Information criteria {-}
 
@@ -145,14 +163,53 @@ Compare the same two models with a likelihood ratio test. Then calculate the tes
 Hypothesis 2 says native richness depends on the islands' history: years since deglaciation, latitude and years since isolation. Fit the hypothesis 2 model and an intercept-only (null) model. Then compare the five models you now have (null, area, hypothesis 1, hypothesis 2, all six predictors) with AIC, AICc and BIC. For the model with the lowest AICc, calculate how many times more likely it is than each of the other four.
 
 ```{r info-criteria}
+# load MuMIn
+library(MuMIn)
+
 # h2_mod <-
+h2_mod <- lm(ntv.rich ~ years.isol + years.deglac + latitude, data = islands)
+summary(h2_mod)
 
 # null_mod <-
+null_mod <- lm(ntv.rich ~ 1, data = islands)
+summary(null_mod)
+
+# compare the five models
+models <- list(
+    null = null_mod,
+    area = area_mod,
+    h1 = h1_mod,
+    h2 = h2_mod,
+    all = all_mod
+)
+
+model_comp <- data.frame(
+    Model = names(models),
+    AIC = sapply(models, AIC),
+    AICc = sapply(models, MuMIn::AICc),
+    BIC = sapply(models, BIC)
+)
+
+model_comp <- model_comp[order(model_comp$AICc), ]
+
+model_comp
+
+# model with the lowest AICc (area-only model), calculate how many times more likely it is than each of the other four
+model_comp$delta_AICc <-
+    model_comp$AICc - min(model_comp$AICc)
+
+model_comp$relative_likelihood <-
+    exp(-0.5 * model_comp$delta_AICc)
+
+model_comp$times_less_likely <-
+    exp(0.5 * model_comp$delta_AICc)
+
+model_comp
 ```
 
 **Question 5:** Which model is best by AIC, by AICc and by BIC? Using the rules of thumb (a difference under 2 means equivalent, over 6 means clearly worse), which models are equivalent to the best one by AICc and which are clearly worse? Why does AICc disagree with AIC here? Which hypothesis is best supported, and what does the hypothesis 2 model tell you on its own?
 
-**Answer:**
+**Answer:** The best model by AIC is the all-six-predictor model (283.66), while the best model by AICc and BIC is the area-only model (285.43 and 287.37, respectively). Using the AICc rules of thumb, the area-only model is the best model, and H1 (ΔAICc = 5.99) is clearly worse because its difference is just below 6, placing it near the boundary. The all-six-predictor model (ΔAICc = 9.30), H2 (13.49), and the null model (15.45) are clearly worse. AICc disagrees with AIC because it applies an additional penalty for model complexity, which is especially important with a small sample size of only 22 islands. Overall, the area-only model is best supported, suggesting that island area is the strongest predictor of native species richness. On its own, the H2 model suggests that island history (years since deglaciation, latitude and years since isolation) is less effective at explaining native richness than island area, although this does not establish that these historical factors have no individual effects.
 
 # Missing values
 
@@ -160,6 +217,20 @@ Hypothesis 1 leaves out the number of soil types, which might also affect native
 
 ```{r missing}
 # soil_mod <-
+soil_mod <- lm(ntv.rich ~ area + soil.types, data = islands)
+summary(soil_mod)
+
+# AIC comparison soil_mod and area_mod
+sapply(c(area_mod, soil_mod), AIC)
+
+# how many islands each model used
+
+# dataset with only the islands that have no missing values
+
+# refit models to it
+
+# compare them again with AIC, AICc and a likelihood ratio test
+
 ```
 
 **Question 6:** Before you removed the missing values, which model looked better by AIC, and by how much? Why was that comparison wrong? After the fix, does the number of soil types improve the model? What did removing the missing values cost?

@@ -1,3 +1,10 @@
 {"chunk":null,"ts":"2026-11-13T13:52:23Z","pid":59403,"engine":"r","severity":"error","render":false,"text":"## Error: object 'ntv.rich' not found"}
 {"chunk":null,"ts":"2026-11-13T14:04:07Z","pid":59403,"engine":"r","severity":"error","render":false,"text":"## Error: object 'h1_mod' not found"}
 {"chunk":null,"ts":"2026-11-13T14:04:14Z","pid":59403,"engine":"r","severity":"error","render":false,"text":"## Error: object 'native_richness' not found"}
+{"chunk":null,"ts":"2026-11-13T17:26:36Z","pid":59403,"engine":"r","severity":"error","render":false,"text":"## Error: could not find function \"lrtest\""}
+{"chunk":null,"ts":"2026-11-13T18:23:54Z","pid":59403,"engine":"r","severity":"error","render":false,"text":"## Error: argument \"object\" is missing, with no default"}
+{"chunk":null,"ts":"2026-11-13T18:24:36Z","pid":59403,"engine":"r","severity":"error","render":false,"text":"## Error: object 'model_comp' not found"}
+{"chunk":null,"ts":"2026-11-13T18:24:43Z","pid":59403,"engine":"r","severity":"error","render":false,"text":"## Error: argument \"object\" is missing, with no default"}
+{"chunk":null,"ts":"2026-11-13T18:39:45Z","pid":59403,"engine":"r","severity":"error","render":false,"text":"## Error: no applicable method for 'logLik' applied to an object of class \"c('double', 'numeric')\""}
+{"chunk":null,"ts":"2026-11-13T18:39:50Z","pid":59403,"engine":"r","severity":"error","render":false,"text":"## Error: no applicable method for 'logLik' applied to an object of class \"c('double', 'numeric')\""}
+{"chunk":null,"ts":"2026-11-13T18:42:40Z","pid":59403,"engine":"r","severity":"error","render":false,"text":"## Error: no applicable method for 'logLik' applied to an object of class \"c('double', 'numeric')\""}
