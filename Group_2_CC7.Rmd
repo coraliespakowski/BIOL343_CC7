@@ -220,17 +220,35 @@ Hypothesis 1 leaves out the number of soil types, which might also affect native
 soil_mod <- lm(ntv.rich ~ area + soil.types, data = islands)
 summary(soil_mod)
 
-# AIC comparison soil_mod and area_mod
-sapply(c(area_mod, soil_mod), AIC)
+# comparison AIC of the two original models
+sapply(list(area_mod = area_mod, soil_mod = soil_mod), AIC)
 
 # how many islands each model used
+nobs(area_mod)
+nobs(soil_mod)
 
-# dataset with only the islands that have no missing values
+# dataset containing only complete cases
+islands_complete <- islands[
+    complete.cases(
+        islands[, c("ntv.rich", "area", "soil.types")]
+    ),
+]
 
-# refit models to it
+# refiting both models using the same dataset
+area_mod_complete <- lm(ntv.rich ~ area, data = islands_complete)
 
-# compare them again with AIC, AICc and a likelihood ratio test
+soil_mod_complete <- lm(
+    ntv.rich ~ area + soil.types,
+    data = islands_complete
+)
 
+# comparing AIC and AICc
+AIC(area_mod_complete, soil_mod_complete)
+
+AICc(area_mod_complete, soil_mod_complete)
+
+# likelihood ratio test
+anova(area_mod_complete, soil_mod_complete)
 ```
 
 **Question 6:** Before you removed the missing values, which model looked better by AIC, and by how much? Why was that comparison wrong? After the fix, does the number of soil types improve the model? What did removing the missing values cost?
